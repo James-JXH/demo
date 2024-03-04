@@ -1,0 +1,7 @@
+# dependencies
+/node_modules
+package-lock.json
+/.next
+
+# misc
+.DS_Store
