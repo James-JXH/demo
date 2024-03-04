@@ -1,9 +1,11 @@
 "use client"; // This is a client component 👈🏽
-import { useEffect } from 'react';
-import { Tab } from '@mui/base/Tab';
-import { TabsList } from '@mui/base/TabsList';
-import { TabPanel } from '@mui/base/TabPanel';
-import { Tabs } from '@mui/base/Tabs';
+import { useEffect, useState } from 'react';
+import { styled } from '@mui/system';
+import { Tabs as BaseTabs } from '@mui/base/Tabs';
+import { TabsList as BaseTabsList } from '@mui/base/TabsList';
+import { TabPanel as BaseTabPanel } from '@mui/base/TabPanel';
+import { buttonClasses } from '@mui/base/Button';
+import { Tab as BaseTab, tabClasses } from '@mui/base/Tab';
 import * as Highcharts from 'highcharts';
 import * as Exporting from 'highcharts/modules/exporting';
 import Image from "next/image";
@@ -11,11 +13,125 @@ import styles from "./page.module.css";
 // Initialize exporting module.
 Exporting(Highcharts);
 
-export default function Home() {
+
+const blue = {
+  50: '#F0F7FF',
+  100: '#C2E0FF',
+  200: '#80BFFF',
+  300: '#66B2FF',
+  400: '#3399FF',
+  500: '#007FFF',
+  600: '#0072E5',
+  700: '#0059B2',
+  800: '#004C99',
+  900: '#003A75',
+};
+
+const grey = {
+  50: '#F3F6F9',
+  100: '#E5EAF2',
+  200: '#DAE2ED',
+  300: '#C7D0DD',
+  400: '#B0B8C4',
+  500: '#9DA8B7',
+  600: '#6B7A90',
+  700: '#434D5B',
+  800: '#303740',
+  900: '#1C2025',
+};
+
+const Tab = styled(BaseTab)`
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: bold;
+  background-color: transparent;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 7px;
+  display: flex;
+  justify-content: center;
+
+  &:hover {
+    background-color: ${blue[400]};
+  }
+
+  &:focus {
+    color: #fff;
+    outline: 3px solid ${blue[200]};
+  }
+
+  &.${buttonClasses.focusVisible} {
+    background-color: #fff;
+    color: ${blue[600]};
+  }
+
+  &.${tabClasses.disabled} {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.${tabClasses.selected} {
+    background-color: #fff;
+    color: ${blue[600]};
+  }
+`;
+
+const TabPanel = styled(BaseTabPanel)`
+  width: 100%;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem;
+`;
+
+const Tabs = styled(BaseTabs)`
+  display: flex;
+  gap: 16px;
+  width: 200px;
+`;
+
+const TabsList = styled(BaseTabsList)(
+  ({ theme }) => `
+  min-width: 80px;
+  background-color: ${blue[500]};
+  border-radius: 12px;
+  margin-bottom: 16px;
+  display: flex;
+  padding: 6px;
+  gap: 12px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-content: space-between;
+  box-shadow: 0px 4px 8px ${theme.palette.mode === 'dark' ? grey[900] : grey[200]};
+  `,
+);
+
+
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRlIjoiMjAyNC0wMy0wNCAxNzowOTo0NSIsInVzZXJfaWQiOiJqYW1lc2ppIiwiaXAiOiIxNjUuMTU0LjczLjIzMyJ9.lfQR7-ibt9UEGPrmBKnlGBpCLcIvVAUavofj7slpfmM';
+
+export default function Home({ posts }) {
+  console.log(posts, "data"); 
+  const [list, setList] = useState();
 
   useEffect(() => {
 
+    fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&token=${token}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data?.status === 200) {
+        setList(data?.data);
+      } else {
+        setList([]);
+      }
+    });
+      //console.log('res---', res);
+      //setList(res?.data);
+
+    console.log('res', list);
     // Generate the chart
+
     Highcharts?.chart('container', {
       // options - see https://api.highcharts.com/highcharts
       chart: {
@@ -103,38 +219,35 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <Tabs defaultValue={0} orientation="vertical">
+        <Tabs defaultValue={2} orientation="vertical">
           <TabsList>
-            <Tab>One</Tab>
-            <Tab>Two</Tab>
-            <Tab>Three</Tab>
+            <Tab>最新動態</Tab>
+            <Tab>財務報表</Tab>
+            <Tab>獲利能力</Tab>
+            <Tab>安全性分析</Tab>
+            <Tab>成長力分析</Tab>
+            <Tab>價值評估</Tab>
+            <Tab>董監與籌碼</Tab>
+            <Tab>關鍵指標</Tab>
+            <Tab>產品組合</Tab>
           </TabsList>
-          <TabPanel value={0}>First page</TabPanel>
-          <TabPanel value={1}>Second page</TabPanel>
-          <TabPanel value={2}>Third page</TabPanel>
+          <TabPanel value={2}>
+            <Tabs defaultValue={'2-1'} orientation="vertical">
+              <TabsList>
+                <Tab>每月營收</Tab>
+                <Tab>每股盈餘</Tab>
+                <Tab>每股淨值</Tab>
+                <Tab>損益表</Tab>
+                <Tab>總資產</Tab>
+                <Tab>負債和股東權益</Tab>
+                <Tab>現金流量表</Tab>
+                <Tab>股利政策</Tab>
+                <Tab>電子書</Tab>
+              </TabsList>
+            </Tabs>
+          </TabPanel>
         </Tabs>
         <div id="container"></div>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
       </div>
 
       <div className={styles.center}>
@@ -202,3 +315,32 @@ export default function Home() {
     </main>
   );
 }
+
+
+/*
+Home.getInitialProps = async () => {
+  let pageProps = {};
+
+  try {
+    let data = await fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&token=${token}`);
+    pageProps["data"] = data;
+  } catch (error) {}
+
+  return { pageProps };
+};*/
+
+
+/*export async function getServerSideProps(context) {
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+  const res = await fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&token=${token}`)
+  const posts = await res.json()
+console.log('res',res);
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      posts,
+    },
+  }
+}*/
